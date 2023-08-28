@@ -30,6 +30,7 @@
        priv: '*.*:ALL'
        state: present
        host: '%'
+     ignore_errors: yes
 
    - name: copy dump
      copy:
