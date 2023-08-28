@@ -1,0 +1,42 @@
+---
+   - name: Instalar MySql
+     yum: name={{ item }} state=installed
+     with_items:
+     - mysql
+     - mysql-server
+
+   - name: Instalar mysqlclient
+     pip:
+       name: "{{ item }}"
+       state: present
+     with_items:
+     - PyMySQL
+
+   - name: Start Mysql
+     systemd:
+       name: mysqld
+       state: started
+       enabled: yes
+
+   - name: Criar Aplicação Database
+     community.mysql.mysql_db:
+       name: "{{ db_name }}"
+       state: present
+
+   - name: Criar usuario no db
+     community.mysql.mysql_user:
+       name: "{{ db_user }}"
+       password: "{{ db_user_password }}"
+       priv: '*.*:ALL'
+       state: present
+       host: '%'
+
+   - name: copy dump
+     copy:
+       src: /home/ansible/app-ecommerce/db-load-script.sql
+       dest: /tmp/db-load-script.sql
+     ignore_errors: yes 
+
+   - name: subir dump
+     shell: "mysql -u {{ db_user }} -p'{{ db_user_password }}' < /tmp/db-load-script.sql"
+     ignore_errors: yes 
